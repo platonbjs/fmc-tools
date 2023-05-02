@@ -15,7 +15,7 @@ ac_policy = 'api-test-policy'
 policyFile = open(ac_policy + ".csv", "w")
 
 # Initialize a new api object
-api = FireREST(hostname=device, username=username, password=password)
+api = FireREST(hostname=device, username=username, password=password, domain=domain)
 
 # Get IDs for specified objects. API PK = UUID, so we have to find the matching api object for the name specified.
 if ac_policy:
