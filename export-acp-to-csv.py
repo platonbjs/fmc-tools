@@ -31,7 +31,8 @@ print("-" * 85)
 
 # Write CSV Header
 policyFile.write("#, name, enabled, action, sourceZones, destZones, sourceNetworks, destNetworks, sourcePorts, "
-                 "destPorts, ipsPolicy, variableSet, filePolicy, logBegin, logEnd, sendEventsToFMC, syslogConfig\n")
+                 "destPorts, applications, URLs, users, ipsPolicy, variableSet, filePolicy, logBegin, logEnd, "
+                 "sendEventsToFMC, syslogConfig\n")
 
 # Get all access control rules for the access control policy specified
 acp_rules = api.get_acp_rules(acp_id, expanded=True)
@@ -109,6 +110,33 @@ for response in acp_rules:
         except KeyError:
             line['destPorts'] = ['any']
 
+        # Applications
+        line['applications'] = []
+        try:
+            for item in rule['applications']['applications']:
+                # Put each object in a list, will join to str when printing to CSV
+                line['applications'].append(item['name'])
+        except KeyError:
+            line['applications'] = ['any']
+
+        # URLs
+        line['URLs'] = []
+        try:
+            for item in rule['urls']['literals']:
+                # Put each object in a list, will join to str when printing to CSV
+                line['URLs'].append(item['url'])
+        except KeyError:
+            line['URLs'] = ['any']
+
+        # Users
+        line['users'] = []
+        try:
+            for item in rule['users']['objects']:
+                # Put each object in a list, will join to str when printing to CSV
+                line['users'].append(item['name'])
+        except KeyError:
+            line['users'] = ['any']
+
         # Now get items that may not exist, but can only have one value
         # ipsPolicy
         try:
@@ -138,11 +166,14 @@ for response in acp_rules:
         print("Writing rule #{0} to CSV...".format(line['ruleNum']))
 
         # Write rule to line in policyFile
-        policyFile.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}\n"
+        policyFile.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}'\n"
                          .format(line['ruleNum'], line['name'], line['enabled'], line['action'],
                                  ';'.join(line['sourceZones']), ';'.join(line['destZones']),
                                  ';'.join(line['sourceNetworks']), ';'.join(line['destNetworks']),
-                                 ';'.join(line['sourcePorts']), ';'.join(line['destPorts']), line['ipsPolicy'],
+                                 ';'.join(line['sourcePorts']), ';'.join(line['destPorts']),
+                                 ';'.join(line['applications']), ';'.join(line['URLs']),
+                                 ';'.join(line['users']), 
+                                 line['ipsPolicy'],
                                  line['variableSet'], line['filePolicy'], line['logBegin'], line['logEnd'],
                                  line['sendEventsToFMC'], line['syslogConfig']))
 policyFile.close()
